@@ -1,35 +1,11 @@
-<!DOCTYPE html>
-<html>
-<head>
-<meta charset="utf-8">
-<style>
-body{
-margin:0;
-font-family:sans-serif;
-font-size:14px;
-text-align:center;
-}
-</style>
-</head>
-
-<body>
-
-<div id="views">
-👁️ Đang tải...
-</div>
-
 <script type="module">
 
-import { initializeApp }
-from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
-
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
 import {
-getFirestore,
-doc,
-getDoc,
-setDoc
-}
-from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+  getFirestore,
+  doc,
+  runTransaction
+} from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyDiItFPRUuc0m9RajJEDZKmbLZAtQwuGDQ",
@@ -44,31 +20,33 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 const params = new URLSearchParams(location.search);
+const chapter = params.get("chapter") || "unknown";
 
-const chapter =
-params.get("chapter") || "unknown";
+const ref = doc(db, "views", chapter);
 
-const ref =
-doc(db,"views",chapter);
+let count = 0;
 
-const snap =
-await getDoc(ref);
+try {
+  count = await runTransaction(db, async (transaction) => {
+    const snap = await transaction.get(ref);
 
-let count = 1;
+    let newCount = 1;
 
-if(snap.exists()){
-count = snap.data().count + 1;
+    if (snap.exists()) {
+      newCount = (snap.data().count || 0) + 1;
+    }
+
+    transaction.set(ref, { count: newCount });
+
+    return newCount;
+  });
+
+  document.getElementById("views").innerHTML =
+    `👁️ ${count} lượt xem`;
+
+} catch (e) {
+  document.getElementById("views").innerHTML =
+    "👁️ Lỗi tải lượt xem";
 }
 
-await setDoc(ref,{
-count
-});
-
-document.getElementById("views")
-.innerHTML =
-`👁️ ${count} lượt xem`;
-
 </script>
-
-</body>
-</html>
