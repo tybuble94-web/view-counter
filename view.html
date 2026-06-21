@@ -1,52 +1,29 @@
 <script type="module">
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
 import {
   getFirestore,
   doc,
-  runTransaction
+  getDoc,
+  setDoc
 } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 
 const firebaseConfig = {
-    apiKey: "AIzaSyDiItFPRUuc0m9RajJEDZKmbLZAtQwuGDQ",
-    authDomain: "notioncountview.firebaseapp.com",
-    projectId: "notioncountview",
-    storageBucket: "notioncountview.firebasestorage.app",
-    messagingSenderId: "533486500231",
-    appId: "1:533486500231:web:129f2dc25dc8cc7a4fbb22"
+  apiKey: "AIzaSyDiItFPRUuc0m9RajJEDZKmbLZAtQwuGDQ",
+  authDomain: "notioncountview.firebaseapp.com",
+  projectId: "notioncountview",
+  storageBucket: "notioncountview.firebasestorage.app",
+  messagingSenderId: "533486500231",
+  appId: "1:533486500231:web:129f2dc25dc8cc7a4fbb22"
 };
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-const params = new URLSearchParams(location.search);
-const chapter = params.get("chapter") || "unknown";
+const ref = doc(db, "test", "ping");
 
-const ref = doc(db, "views", chapter);
+await setDoc(ref, { ok: true });
 
-let count = 0;
+const snap = await getDoc(ref);
 
-try {
-  count = await runTransaction(db, async (transaction) => {
-    const snap = await transaction.get(ref);
-
-    let newCount = 1;
-
-    if (snap.exists()) {
-      newCount = (snap.data().count || 0) + 1;
-    }
-
-    transaction.set(ref, { count: newCount });
-
-    return newCount;
-  });
-
-  document.getElementById("views").innerHTML =
-    `👁️ ${count} lượt xem`;
-
-} catch (e) {
-  document.getElementById("views").innerHTML =
-    "👁️ Lỗi tải lượt xem";
-}
-
+console.log("Firestore OK:", snap.data());
 </script>
