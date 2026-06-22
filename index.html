@@ -2,13 +2,20 @@
 <html>
 <head>
 <meta charset="utf-8">
-<title>Test Firebase</title>
+<style>
+body{
+  margin:0;
+  font-family:sans-serif;
+  font-size:14px;
+  text-align:center;
+}
+</style>
 </head>
 
 <body>
 
 <div id="views">
-Đang kiểm tra Firebase...
+👁️ Đang tải...
 </div>
 
 <script type="module">
@@ -34,30 +41,30 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-try {
+const params = new URLSearchParams(location.search);
 
-  const ref = doc(db, "test", "ping");
+const chapter =
+params.get("chapter") || "unknown";
 
-  await setDoc(ref, {
-    ok: true
-  });
+const ref =
+doc(db,"views",chapter);
 
-  const snap = await getDoc(ref);
+const snap =
+await getDoc(ref);
 
-  document.getElementById("views").innerHTML =
-    "✅ Firebase hoạt động";
+let count = 1;
 
-  console.log("Firestore OK:", snap.data());
-
+if(snap.exists()){
+  count = snap.data().count + 1;
 }
-catch(error){
 
-  document.getElementById("views").innerHTML =
-    "❌ Lỗi: " + error.message;
+await setDoc(ref,{
+  count
+});
 
-  console.error(error);
-
-}
+document.getElementById("views")
+.innerHTML =
+`👁️ ${count} lượt xem`;
 
 </script>
 
